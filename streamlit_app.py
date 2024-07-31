@@ -39,20 +39,18 @@ def checkingFile():
 
     return fileName
 
+
+
+
+
+
 # Main code:
 
 st.title("My new app")
-st.write(
-    "Let's start building! For help and inspiration, head over to [docs.streamlit.io](https://docs.streamlit.io/)."
-)
 
-# Check file:
+# Check validity of file:
 
 fileName = checkingFile()
-
-
-
-
 
 # Read the CSV file into a DataFrame (CSV is in format of Pay Equity Instruction and Data Template)
 
