@@ -5,11 +5,6 @@ import pandas as pd
 
 # Helper methods:
 
-def rerunFile():
-
-    st.rerun
-
-
 def checkingFile(): 
 
     # Create a file uploader widget to upload file:
@@ -27,35 +22,20 @@ def checkingFile():
         except pd.errors.EmptyDataError:
                         
             st.error("The file is empty. Please try again.")
-
-            # Rerun the app to clear error message
-
-            rerunFile()
-
-                    
+       
         except pd.errors.ParserError:
                     
             st.error("There was an error parsing the file. Please ensure the file is a valid CSV.")
-
-            # Rerun the app to clear error message
-
-            rerunFile()
                     
         except Exception as e:
                     
             # Displaying error message in the Streamlit app: 
 
             st.error(f"An error occurred: {e}")
-
-            # Rerun the app to clear error message
-
-            rerunFile()
             
     else:
 
         st.info("Please upload a CSV file to proceed.")
-
-        rerunFile()
 
     return fileName
 
