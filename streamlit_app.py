@@ -1,7 +1,18 @@
 import streamlit as st
 import pandas as pd
 
- # For running streamlit app through VSCode: streamlit run streamlit_app.py
+# Note: For running streamlit app through VSCode: streamlit run streamlit_app.py
+
+# Helper methods:
+
+def rerunFile():
+
+    st.rerun
+
+
+
+
+# Main code:
 
 st.title("My new app")
 st.write(
@@ -69,11 +80,6 @@ print(df)
 
 
 # Present it with a visual (create bar graph)
-
-
-def rerunFile():
-
-    st.rerun
 
 
 
