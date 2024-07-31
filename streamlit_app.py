@@ -22,7 +22,7 @@ st.write(
 
 # Create a file uploader widget to upload file:
 
-if uploaded_file is not None:
+if fileName is not None:
 
     # Check for valid CSV file:
 
