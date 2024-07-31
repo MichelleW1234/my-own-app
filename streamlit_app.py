@@ -26,10 +26,6 @@ try:
 
     fileName = st.file_uploader("Please input a csv file", type="csv")
 
-    if fileName is None:
-
-        rerunFile()
-
 except pd.errors.EmptyDataError:
                 
     st.error("The file is empty. Please try again.")
