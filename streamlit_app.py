@@ -20,40 +20,47 @@ st.write(
 )
 
 
-# Create a file uploader widget and checking for valid file:
+# Create a file uploader widget to upload file:
 
-try:
+if uploaded_file is not None:
 
-    fileName = st.file_uploader("Please input a csv file", type="csv")
+    # Check for valid CSV file:
 
-except pd.errors.EmptyDataError:
+    try:
+
+        fileName = st.file_uploader("Please input a csv file", type="csv")
+
+    except pd.errors.EmptyDataError:
+                    
+        st.error("The file is empty. Please try again.")
+
+        # Rerun the app to clear error message
+
+        rerunFile()
+
                 
-    st.error("The file is empty. Please try again.")
+    except pd.errors.ParserError:
+                
+        st.error("There was an error parsing the file. Please ensure the file is a valid CSV.")
 
-    # Rerun the app to clear error message
+        # Rerun the app to clear error message
 
-    rerunFile()
+        rerunFile()
+                
+    except Exception as e:
+                
+        # Displaying error message in the Streamlit app: 
 
-            
-except pd.errors.ParserError:
-            
-    st.error("There was an error parsing the file. Please ensure the file is a valid CSV.")
+        st.error(f"An error occurred: {e}")
 
-    # Rerun the app to clear error message
+        # Rerun the app to clear error message
 
-    rerunFile()
-            
-except Exception as e:
-            
-     # Displaying error message in the Streamlit app: 
-
-    st.error(f"An error occurred: {e}")
-
-    # Rerun the app to clear error message
-
-    rerunFile()
+        rerunFile()
            
-        
+else:
+
+    st.info("Please upload a CSV file to proceed.")
+
 # Read the CSV file into a DataFrame (CSV is in format of Pay Equity Instruction and Data Template)
 
 df = pd.read_csv(fileName)
