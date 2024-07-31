@@ -60,12 +60,16 @@ df = pd.read_csv(file_name)
 
 essential_variables = ["ID", "Salary", "Gender", "Ethnicity", "Job Function/Family/Group", "Job Level", "Pay Grade", "Geo Location", "Pay Differential"]
 
+# Chrcking for variables in file that match with essential variables:
+
 for column in df.columns:
     
     if column in essential_variables:
 
         print(column)
 
+
+print("Works!")
 
 # Display the DataFrame
 
