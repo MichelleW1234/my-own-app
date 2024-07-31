@@ -28,7 +28,7 @@ if fileName is not None:
 
         # Rerun the app to clear error message
 
-        st.experimental_rerun() 
+        st.rerun
 
             
     except pd.errors.ParserError:
@@ -37,7 +37,7 @@ if fileName is not None:
 
         # Rerun the app to clear error message
 
-        st.experimental_rerun() 
+        st.rerun
             
     except Exception as e:
             
@@ -47,13 +47,13 @@ if fileName is not None:
 
         # Rerun the app to clear error message
 
-        st.experimental_rerun()
+        st.rerun
            
 else:
 
     # Rerun the app
 
-    st.experimental_rerun() 
+    st.rerun 
         
 # Read the CSV file into a DataFrame (CSV is in format of Pay Equity Instruction and Data Template)
 
