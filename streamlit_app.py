@@ -9,9 +9,9 @@ def checkingFile():
 
     # Create a file uploader widget to upload file:
 
-    fileName = st.file_uploader("Please input a csv file", type="csv")
+    file_name = st.file_uploader("Please input a csv file", type="csv")
 
-    if fileName is not None:
+    if file_name is not None:
 
         # Check for valid CSV file:
 
@@ -37,7 +37,7 @@ def checkingFile():
 
         st.info("Please upload a CSV file to proceed.")
 
-    return fileName
+    return file_name
 
 
 
@@ -50,15 +50,26 @@ st.title("My new app")
 
 # Check validity of file:
 
-fileName = checkingFile()
+file_name = checkingFile()
 
 # Read the CSV file into a DataFrame (CSV is in format of Pay Equity Instruction and Data Template)
 
-df = pd.read_csv(fileName)
+df = pd.read_csv(file_name)
+
+# List of essential variables:
+
+essential_variables = ["ID", "Salary", "Gender", "Ethnicity", "Job Function/Family/Group", "Job Level", "Pay Grade", "Geo Location", "Pay Differential"]
+
+for column in df.columns:
+    
+    if column in essential_variables:
+
+        print(column)
+
 
 # Display the DataFrame
 
-print(df)
+# print(df)
 
 
 
