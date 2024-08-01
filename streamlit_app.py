@@ -59,6 +59,7 @@ df = pd.read_csv(file_name)
 # List of essential variables:
 
 essential_variables = ["ID", "Salary", "Gender", "Ethnicity", "Job Function/Family/Group", "Job Level", "Pay Grade", "Geo Location", "Pay Differential"]
+collecting_variables = []
 
 # Chrcking for variables in file that match with essential variables:
 
@@ -66,8 +67,30 @@ for column in df.columns:
     
     if column in essential_variables:
 
-        print(column)
+        collecting_variables.append(column)
 
+if "Pay Grade" in collecting_variables:
+
+    essential_variables.remove("Job Level")
+        
+if "Job Level" in collecting_variables:
+
+    essential_variables.remove("Pay Grade")
+
+if "Geo Location" in collecting_variables:
+
+    essential_variables.remove("Pay Differential")
+
+if "Pay Differential" in collecting_variables:
+
+    essential_variables.remove("Geo Location")
+
+essential_set = set(essential_variables)
+collecting_set = set(collecting_variables)
+
+if essential_set != collecting_set:
+
+    st.info("This file doesn't contain the minimum variables.")
 
 print("Works!")
 
