@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 
+
 # Note: For running streamlit app through VSCode: streamlit run streamlit_app.py
 
 # Helper methods:
@@ -57,10 +58,9 @@ file_name = checkingFile()
 df = pd.read_csv(file_name)
 
 # List of essential variables:
-'''
+
 essential_variables = ["ID", "Salary", "Gender", "Ethnicity", "Job Function/Family/Group", "Job Level", "Pay Grade", "Geo Location", "Pay Differential"]
 collecting_variables = []
-
 
 # Chrcking for variables in file that match with essential variables:
 
@@ -74,7 +74,7 @@ if "Pay Grade" in collecting_variables:
 
     essential_variables.remove("Job Level")
         
-if "Job Level" in collecting_variables:
+elif "Job Level" in collecting_variables:
 
     essential_variables.remove("Pay Grade")
 
@@ -82,33 +82,24 @@ if "Geo Location" in collecting_variables:
 
     essential_variables.remove("Pay Differential")
 
-if "Pay Differential" in collecting_variables:
+elif "Pay Differential" in collecting_variables:
 
     essential_variables.remove("Geo Location")
 
-essential_set = set(essential_variables)
-collecting_set = set(collecting_variables)
 
-if essential_set != collecting_set:
+if set(essential_variables) != set(collecting_variables):
 
-    st.info("This file doesn't contain the minimum variables.")
-'''
+    st.info("This file doesn't contain the minimum variables. Please choose another CSV file.")
 
-print("Works!")
+else:
 
-# Display the DataFrame
+    # File contains all necessary variables and can proceed with analysis: 
 
-# print(df)
+    print("Yippee!")
 
+    # Prep information ()
 
 
-
-
-
-
-# Prep information ()
-
-
-# Present it with a visual (create bar graph)
+    # Present it with a visual (create bar graph)
 
 
