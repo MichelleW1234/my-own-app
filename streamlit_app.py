@@ -43,10 +43,6 @@ def checkingFile():
     return file_name
 
 
-
-
-
-
 # Main code:
 
 st.title("My new app")
@@ -60,7 +56,7 @@ df = pd.read_csv(file_name, header=None)
 
 # List of essential variables:
 
-essential_variables = ["id", "salary", "gender", "ethnicity", "job function/family/group", "job level", "pay grade", "geo location", "pay differential"]
+essential_variables = ["id", "salary", "gender", "ethnicity", "job function", "job family", "job group", "job level", "pay grade", "geo location", "pay differential"]
 collecting_variables = []
 
 # Checking for variables in file that match with essential variables:
@@ -76,14 +72,14 @@ for column in variable_names:
 
         collecting_variables.append(column.lower())
 
-    elif column == "Text":
+    elif "Text" in column:
 
+        print(df.iloc[1, counter].lower())
         if df.iloc[1, counter].lower() in essential_variables:
 
             collecting_variables.append(df.iloc[1, counter].lower())
 
     counter = counter+1
-
 
 if "pay grade" in collecting_variables:
 
@@ -101,12 +97,28 @@ elif "pay differential" in collecting_variables:
 
     essential_variables.remove("geo location")
 
+if "job function" in collecting_variables:
+
+    essential_variables.remove("job family")
+    essential_variables.remove("job group")
+
+elif "job family" in collecting_variables:
+
+    essential_variables.remove("job function")
+    essential_variables.remove("job group")
+
+elif "job group" in collecting_variables:
+
+    essential_variables.remove("job function")
+    essential_variables.remove("job family")
+
+
 print("variables in collecting list: ")
 print(collecting_variables)
 print("variables in essential list: ")
 print(essential_variables)
 
-if collecting_variables != essential_variables:
+if set(collecting_variables) != set(essential_variables):
     
     essential_variables_copy = copy.deepcopy(essential_variables)
 
@@ -120,12 +132,23 @@ if collecting_variables != essential_variables:
 
             if variable == "job level":
 
+                essential_variables_copy.remove("job level")
                 essential_variables_copy.remove("pay grade")
+                essential_variables_copy.append("job level or pay grade")
                     
             if variable == "geo location":
 
+                essential_variables_copy.remove("geo location")
                 essential_variables_copy.remove("pay differential")
+                essential_variables_copy.append("geo location or pay differential")
     
+            if variable == "job function":
+
+                essential_variables_copy.remove("job function")
+                essential_variables_copy.remove("job family")
+                essential_variables_copy.remove("job group")
+                essential_variables_copy.append("job function/family/group")
+
     missing_variables = ""
     for variable in essential_variables_copy:
 
