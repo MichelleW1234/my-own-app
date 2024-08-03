@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from itertools import combinations
 import copy
+import matplotlib.pyplot as plt
 
 
 # Note: For running streamlit app through VSCode: streamlit run streamlit_app.py
@@ -40,7 +41,7 @@ def checkingFile():
 
         st.info("Please upload a CSV file to proceed.")
 
-    return file_name
+    return pd.read_csv(file_name, header=None)
 
 
 # Main code:
@@ -49,15 +50,13 @@ st.title("My new app")
 
 # Check validity of file:
 
-file_name = checkingFile()
-
-
-df = pd.read_csv(file_name, header=None)
+df = checkingFile()
 
 # List of essential variables:
 
 essential_variables = ["id", "salary", "gender", "ethnicity", "job function", "job family", "job group", "job level", "pay grade", "geo location", "pay differential"]
 collecting_variables = []
+official_variables_list = []
 
 # Checking for variables in file that match with essential variables:
 
@@ -71,13 +70,14 @@ for column in variable_names:
     if column.lower() in essential_variables:
 
         collecting_variables.append(column.lower())
+        official_variables_list.append(df.iloc[1, counter])
 
     elif "Text" in column:
 
-        print(df.iloc[1, counter].lower())
         if df.iloc[1, counter].lower() in essential_variables:
 
             collecting_variables.append(df.iloc[1, counter].lower())
+            official_variables_list.append(df.iloc[1, counter])
 
     counter = counter+1
 
@@ -112,12 +112,6 @@ elif "job group" in collecting_variables:
     essential_variables.remove("job function")
     essential_variables.remove("job family")
 
-
-print("variables in collecting list: ")
-print(collecting_variables)
-print("variables in essential list: ")
-print(essential_variables)
-
 if set(collecting_variables) != set(essential_variables):
     
     essential_variables_copy = copy.deepcopy(essential_variables)
@@ -150,6 +144,7 @@ if set(collecting_variables) != set(essential_variables):
                 essential_variables_copy.append("job function/family/group")
 
     missing_variables = ""
+
     for variable in essential_variables_copy:
 
         missing_variables += "- " + variable + "\n\n"
@@ -158,60 +153,49 @@ if set(collecting_variables) != set(essential_variables):
 
 else:
 
+    st.header("Here is a summary of the individual relationships between your essential variables: ")
+
     # File contains all necessary variables and can proceed with analysis: 
 
-    print("Yippee!")
-
-    '''
     # Prep information (Aggregate the data):
 
+    # Set column names to the second row:
+
+    df.columns = df.iloc[1] 
+
+    # Remove the first two rows (header and the data that became headers):
+    df = df[2:]
+
+    # Reset index to clean up any residual index issues:
+
+    df.reset_index(drop=True, inplace=True)
+
     # Generate all combinations of essential variables of length 2:
-    variable_combinations = list(combinations(essential_variables, 2))
 
-    # Convert to list of lists:
-    variable_combinations = [list(combo) for combo in variable_combinations]
+    variable_combinations = list(combinations(official_variables_list, 2))
 
-    print(variable_combinations)
+   
+    # Present it with a visual (create bar graph):
 
-    # Count the number of occurrences in each value for each essential variable:
+    fig, ax = plt.subplots()
 
-    combination_counts_list = []
+    for combo in variable_combinations:
 
-    for combos in variable_combinations:
+        # Count the number of occurrences in each value for each essential variable: ?????????
+        
+        combination_counts = df.groupby(list(combo)).size().reset_index(name='Count')
 
-        combination_counts = df.groupby(combos).size().reset_index(name='Count')
-        combination_counts_list.append((combos, combination_counts))
+        # Plot:
 
-        print("Count of each combination:")
-        print(combination_counts)
+        ax.bar(combination_counts[list(combo)[0]].astype(str), combination_counts['Count'])
+ 
+        # Set labels:
 
+        ax.set_xlabel(list(combo)[0])
+        ax.set_ylabel('Count')
+        ax.set_title(f"Count of {combo[0]} and {combo[1]}")
 
+        # Display bar chart in Streamlit:
 
-
-
-
-
-
-
-
-
-
-    # MAY USE:
-
-    # Read the CSV file into a DataFrame (loads the entire file as data, including the first and second rows)
-
-    df_raw = pd.read_csv(file_name, header=None)
-
-    # Step 2: Extract column names from the second row (index 1) and drop the first two rows
-    variables = df_raw.iloc[1].tolist()  # Extract column names from the second row
-    df_clean = df_raw[2:]  # Drop the first two rows
-
-    # Set new column names to the DataFrame:
-    df_clean.columns = variables
-
-    # Reset index:
-    df_clean.reset_index(drop=True, inplace=True)
-
-    # Present it with a visual (create bar graph)
-    '''
+        st.pyplot(fig)
 
