@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from itertools import combinations
+import copy
 
 
 # Note: For running streamlit app through VSCode: streamlit run streamlit_app.py
@@ -67,35 +68,36 @@ collecting_variables = []
 # Get the entire list of variables from the data frame:
 variable_names = df.iloc[0].tolist()
 
+# Extract the variables from th list:
 counter = 0
 for column in variable_names:
 
     if column.lower() in essential_variables:
 
-        collecting_variables.append(column)
+        collecting_variables.append(column.lower())
 
     elif column == "Text":
 
         if df.iloc[1, counter].lower() in essential_variables:
 
-            collecting_variables.append(df.iloc[1, counter])
+            collecting_variables.append(df.iloc[1, counter].lower())
 
     counter = counter+1
 
 
-if "Pay Grade" in collecting_variables:
+if "pay grade" in collecting_variables:
 
     essential_variables.remove("job level")
         
-elif "Job Level" in collecting_variables:
+elif "job level" in collecting_variables:
 
     essential_variables.remove("pay grade")
 
-if "Geo Location" in collecting_variables:
+if "geo location" in collecting_variables:
 
     essential_variables.remove("pay differential")
 
-elif "Pay Differential" in collecting_variables:
+elif "pay differential" in collecting_variables:
 
     essential_variables.remove("geo location")
 
@@ -104,9 +106,32 @@ print(collecting_variables)
 print("variables in essential list: ")
 print(essential_variables)
 
-if set(collecting_variables) != set(essential_variables):
+if collecting_variables != essential_variables:
+    
+    essential_variables_copy = copy.deepcopy(essential_variables)
 
-    st.info("This file doesn't contain all the required variables. Please choose another CSV file.")
+    for variable in essential_variables:
+    
+        if variable in collecting_variables:
+
+            essential_variables_copy.remove(variable)
+          
+        else:
+
+            if variable == "job level":
+
+                essential_variables_copy.remove("pay grade")
+                    
+            if variable == "geo location":
+
+                essential_variables_copy.remove("pay differential")
+    
+    missing_variables = ""
+    for variable in essential_variables_copy:
+
+        missing_variables += "- " + variable + "\n\n"
+
+    st.info("This file doesn't contain the following required variables:\n\n" + missing_variables + "Please choose another CSV file.")
 
 else:
 
