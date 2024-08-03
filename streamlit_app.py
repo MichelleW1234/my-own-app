@@ -192,8 +192,8 @@ else:
         # Set labels:
 
         ax.set_xlabel(list(combo)[0])
-        ax.set_ylabel('Count')
-        ax.set_title(f"Count of {combo[0]} and {combo[1]}")
+        ax.set_ylabel("Frequency")
+        ax.set_title(f"Frequency of {combo[0]} and {combo[1]}")
 
         # Display bar chart in Streamlit:
 
