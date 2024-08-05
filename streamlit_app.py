@@ -4,6 +4,8 @@ from itertools import combinations
 import copy
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
+from string import ascii_letters
 
 
 # Note: For running streamlit app through VSCode: streamlit run streamlit_app.py
@@ -50,12 +52,11 @@ def checkingFile():
 st.title("My new app")
 
 # Check validity of file:
-
 df = checkingFile()
 
 # List of essential variables:
+essential_variables = ["salary", "gender", "ethnicity", "job function", "job family", "job group", "job level", "pay grade", "geo location", "pay differential"]
 
-essential_variables = ["id", "salary", "gender", "ethnicity", "job function", "job family", "job group", "job level", "pay grade", "geo location", "pay differential"]
 collecting_variables = []
 official_variables_list = []
 
@@ -65,12 +66,13 @@ official_variables_list = []
 variable_names = df.iloc[0].tolist()
 
 # Extract the variables from th list:
-salary_index = 0 # For converting Salary to categorical data
+salary_index = 0 # (For converting Salary to categorical data)
 counter = 0
 for column in variable_names:
 
     if column.lower() in essential_variables:
 
+        # (For converting Salary to categorical data):
         if column.lower() == "salary":
             salary_index = counter
 
@@ -158,25 +160,22 @@ if set(collecting_variables) != set(essential_variables):
     st.info("This file doesn't contain the following required variables:\n\n" + missing_variables + "Please choose another CSV file.")
 
 else:
+# File contains all necessary variables and can proceed with analysis: 
 
     st.header("Here is a summary of the individual relationships between your essential variables: ")
-
-    # File contains all necessary variables and can proceed with analysis: 
 
     # Prep information (Aggregate the data):
 
     # Set column names to the second row:
-
     df.columns = df.iloc[1] 
 
     # Remove the first two rows (header and the data that became headers):
     df = df[2:]
 
     # Reset index to clean up any residual index issues:
-
     df.reset_index(drop=True, inplace=True)
 
-     # For non-categorical, numeric data (Salary) sort into categories/ranges:
+    # For non-categorical, numeric data (Salary) sort into categories/ranges:
 
     # Convert the column at Salary index to numeric
     df.iloc[:, salary_index] = pd.to_numeric(df.iloc[:, salary_index], errors='coerce')
@@ -196,14 +195,12 @@ else:
     df = df.rename(columns={'Salary_Binned': 'Salary'})
 
     # Generate all combinations of essential variables of length 2:
-
     variable_combinations = list(combinations(official_variables_list, 2))
 
-    # Present it with a visual (create bar graph):
-
+    # Plot each variable combination on a bar graph:
     for combo in variable_combinations:
 
-        # Extract unique value combos from variable and variable:
+        # Extract unique value combos from variable 1 and variable 2:
         value_combinations = df[[combo[0], combo[1]]].drop_duplicates()
 
         # Convert DataFrame to a NumPy record array:
@@ -226,34 +223,79 @@ else:
             # Count the number of such entries:
             count = filtered_df.shape[0]
 
-            a_tuple = (str(value1) + " and " + str(value2), count)
+            a_tuple = (str(value1), str(value2), count)
 
             value_combo_list.append(a_tuple)
 
-        # Plot the variable combo:
 
-        # Create a new figure for each combination:
-        fig, ax = plt.subplots(layout='constrained')
+        # Extract unique values for Variable1 and Variable2:
+        variable1_values = sorted(set(vc[0] for vc in value_combo_list))
+        variable2_values = sorted(set(vc[1] for vc in value_combo_list))
 
-        # The label locations:
-        x = np.arange(len(value_combo_list))
-        width = 0.25  # the width of the bars
-        multiplier = 0
+        # Create a dictionary to map Variable1 values to their frequencies for each Variable2:
+        frequency_dict = {var1: {var2: 0 for var2 in variable2_values} for var1 in variable1_values}
 
-        for attribute, combo_value in value_combo_list:
+        # Fill the dictionary with frequencies:
+        for var1, var2, freq in value_combo_list:
+            frequency_dict[var1][var2] = freq
 
-            offset = width * multiplier
-            rects = ax.bar(x + offset, attribute, width, label=combo_value)
-            ax.bar_label(rects, padding=3)
-            multiplier += 1
+        # Prepare the plot:
+        fig, ax = plt.subplots(figsize=(12, 8))
 
-        # Add some text for labels, title and custom x-axis tick labels, etc.
-        ax.set_ylabel("Frequencies")
-        ax.set_title(f"Frequency of {combo[1]} within {combo[0]}")
-        ax.set_xticks(x + width, combo[0])
-        ax.legend(loc='upper left', ncols=3)
-        ax.set_ylim(0, 250)
+        # Set up bar width and positions:
+        width = 0.2
+        x = np.arange(len(variable1_values))
 
-        plt.show()
+        # Plot bars for each value in Variable2:
+        for i, var2 in enumerate(variable2_values):
+            heights = [frequency_dict[var1][var2] for var1 in variable1_values]
+            ax.bar(x + i * width, heights, width, label=var2)
+
+        # Add labels, title, and legend:
+        ax.set_xticks(x + width * (len(variable2_values) - 1) / 2)
+        ax.set_xticklabels(variable1_values, rotation=90)  # Rotate x-axis labels
+        ax.set_ylabel(f"Frequencies of {combo[1]} within {combo[0]}")
+        ax.set_xlabel(f"{combo[0]}")
+        ax.set_title(f"{combo[1]} vs. {combo[0]}")
+        ax.legend(title='Variable2', loc='upper left', bbox_to_anchor=(1, 1))  # Move legend outside the plot
+
+        # Adjust layout:
+        fig.subplots_adjust(top=0.85, bottom=0.15, left=0.15, right=0.95)
+        plt.tight_layout(pad=2.0)
+
+        # Display the plot in Streamlit:
+        st.pyplot(fig)
 
 
+
+
+
+
+
+'''    
+    # Create a heatmap:
+
+    sns.set_theme(style="white")
+
+    # Generate a large random dataset
+    rs = np.random.RandomState(33)
+    d = pd.DataFrame(data=rs.normal(size=(100, 26)),
+                    columns=list(ascii_letters[26:]))
+
+    # Compute the correlation matrix
+    corr = d.corr()
+
+    # Generate a mask for the upper triangle
+    mask = np.triu(np.ones_like(corr, dtype=bool))
+
+    # Set up the matplotlib figure
+    f, ax = plt.subplots(figsize=(11, 9))
+
+    # Generate a custom diverging colormap
+    cmap = sns.diverging_palette(230, 20, as_cmap=True)
+
+    # Draw the heatmap with the mask and correct aspect ratio
+    sns.heatmap(corr, mask=mask, cmap=cmap, vmax=.3, center=0,
+                square=True, linewidths=.5, cbar_kws={"shrink": .5})
+
+'''
