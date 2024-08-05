@@ -3,6 +3,7 @@ import pandas as pd
 from itertools import combinations
 import copy
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 # Note: For running streamlit app through VSCode: streamlit run streamlit_app.py
@@ -64,10 +65,14 @@ official_variables_list = []
 variable_names = df.iloc[0].tolist()
 
 # Extract the variables from th list:
+salary_index = 0 # For converting Salary to categorical data
 counter = 0
 for column in variable_names:
 
     if column.lower() in essential_variables:
+
+        if column.lower() == "salary":
+            salary_index = counter
 
         collecting_variables.append(column.lower())
         official_variables_list.append(df.iloc[1, counter])
@@ -111,6 +116,7 @@ elif "job group" in collecting_variables:
 
     essential_variables.remove("job function")
     essential_variables.remove("job family")
+    
 
 if set(collecting_variables) != set(essential_variables):
     
@@ -170,32 +176,84 @@ else:
 
     df.reset_index(drop=True, inplace=True)
 
+     # For non-categorical, numeric data (Salary) sort into categories/ranges:
+
+    # Convert the column at Salary index to numeric
+    df.iloc[:, salary_index] = pd.to_numeric(df.iloc[:, salary_index], errors='coerce')
+
+    # Define bin edges based on data statistics
+    min_value = df.iloc[:, salary_index].min()
+    max_value = df.iloc[:, salary_index].max()
+    bin_edges = np.linspace(min_value, max_value, num=21)  # 20 bins
+
+    # Automatically generate bins
+    df["Salary_Binned"] = pd.cut(df.iloc[:, salary_index], bins=bin_edges)
+
+    # Drop the original Salary column
+    df = df.drop(df.columns[salary_index], axis=1)
+
+    # Rename the binned column to 'Salary':
+    df = df.rename(columns={'Salary_Binned': 'Salary'})
+
     # Generate all combinations of essential variables of length 2:
 
     variable_combinations = list(combinations(official_variables_list, 2))
 
-   
     # Present it with a visual (create bar graph):
-
-    fig, ax = plt.subplots()
 
     for combo in variable_combinations:
 
-        # Count the number of occurrences in each value for each essential variable: ?????????
-        
-        combination_counts = df.groupby(list(combo)).size().reset_index(name='Count')
+        # Extract unique value combos from variable and variable:
+        value_combinations = df[[combo[0], combo[1]]].drop_duplicates()
 
-        # Plot:
+        # Convert DataFrame to a NumPy record array:
+        record_array = value_combinations.to_records(index=False)
 
-        ax.bar(combination_counts[list(combo)[0]].astype(str), combination_counts['Count'])
- 
-        # Set labels:
+        # Create a list of tuples with unique value combos and their frequencies:
+        value_combo_list = []
 
-        ax.set_xlabel(list(combo)[0])
-        ax.set_ylabel("Frequency")
-        ax.set_title(f"Frequency of {combo[0]} and {combo[1]}")
+        # Count the number of occurrences in each value combo:
+        for value_combo in record_array:
 
-        # Display bar chart in Streamlit:
+            # Define the values you want to match:
+            value1 = value_combo[0]
+            value2 = value_combo[1]
+            
+            # Filter rows where both conditions are met:
 
-        st.pyplot(fig)
+            filtered_df = df[(df[f"{combo[0]}"] == value1) & (df[f"{combo[1]}"] == value2)]
+
+            # Count the number of such entries:
+            count = filtered_df.shape[0]
+
+            a_tuple = (str(value1) + " and " + str(value2), count)
+
+            value_combo_list.append(a_tuple)
+
+        # Plot the variable combo:
+
+        # Create a new figure for each combination:
+        fig, ax = plt.subplots(layout='constrained')
+
+        # The label locations:
+        x = np.arange(len(value_combo_list))
+        width = 0.25  # the width of the bars
+        multiplier = 0
+
+        for attribute, combo_value in value_combo_list:
+
+            offset = width * multiplier
+            rects = ax.bar(x + offset, attribute, width, label=combo_value)
+            ax.bar_label(rects, padding=3)
+            multiplier += 1
+
+        # Add some text for labels, title and custom x-axis tick labels, etc.
+        ax.set_ylabel("Frequencies")
+        ax.set_title(f"Frequency of {combo[1]} within {combo[0]}")
+        ax.set_xticks(x + width, combo[0])
+        ax.legend(loc='upper left', ncols=3)
+        ax.set_ylim(0, 250)
+
+        plt.show()
+
 
