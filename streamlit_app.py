@@ -5,7 +5,6 @@ import copy
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-from string import ascii_letters
 
 
 # Note: For running streamlit app through VSCode: streamlit run streamlit_app.py
