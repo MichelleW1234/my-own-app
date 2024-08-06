@@ -244,7 +244,9 @@ else:
 
         # Set up bar width and positions:
         width = 0.2
-        x = np.arange(len(variable1_values))
+        # Increase the space between groups:
+        spacing = 0.5  
+        x = np.arange(len(variable1_values)) * (width * len(variable2_values) + spacing)
 
         # Plot bars for each value in Variable2:
         for i, var2 in enumerate(variable2_values):
