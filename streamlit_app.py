@@ -243,15 +243,25 @@ else:
         fig, ax = plt.subplots(figsize=(12, 8))
 
         # Set up bar width and positions:
-        width = 0.2
+
+        # Adjust width to fit all bars:
+        width =  0.8 / len(variable2_values)  
+
         # Increase the space between groups:
         spacing = 0.5  
         x = np.arange(len(variable1_values)) * (width * len(variable2_values) + spacing)
 
-        # Plot bars for each value in Variable2:
-        for i, var2 in enumerate(variable2_values):
+        # Generate rainbow colors
+        num_colors = len(variable2_values)
+        cmap = plt.get_cmap('rainbow')
+        colors = [cmap(i / num_colors) for i in range(num_colors)]
+
+
+        # Plot bars for each value in Variable2
+        for i, (var2, color) in enumerate(zip(variable2_values, colors)):
+        
             heights = [frequency_dict[var1][var2] for var1 in variable1_values]
-            ax.bar(x + i * width, heights, width, label=var2)
+            ax.bar(x + i * width, heights, width, color=color, label=var2)
 
         # Add labels, title, and legend:
         ax.set_xticks(x + width * (len(variable2_values) - 1) / 2)
@@ -259,7 +269,7 @@ else:
         ax.set_ylabel(f"Frequencies of {combo[1]} within {combo[0]}")
         ax.set_xlabel(f"{combo[0]}")
         ax.set_title(f"{combo[1]} vs. {combo[0]}")
-        ax.legend(title='Variable2', loc='upper left', bbox_to_anchor=(1, 1))  # Move legend outside the plot
+        ax.legend(title={combo[1]}, loc='upper left', bbox_to_anchor=(1, 1))  # Move legend outside the plot
 
         # Adjust layout:
         fig.subplots_adjust(top=0.85, bottom=0.15, left=0.15, right=0.95)
