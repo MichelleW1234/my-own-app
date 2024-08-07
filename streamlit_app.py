@@ -6,10 +6,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
-
 # Note: For running streamlit app through VSCode: streamlit run streamlit_app.py
 
-# Helper methods:
+# Helper method:
 
 def checkingFile(): 
 
@@ -161,8 +160,6 @@ if set(collecting_variables) != set(essential_variables):
 else:
 # File contains all necessary variables and can proceed with analysis: 
 
-    st.header("Here is a summary of the individual relationships between your essential variables: ")
-
     # Prep information (Aggregate the data):
 
     # Set column names to the second row:
@@ -193,120 +190,130 @@ else:
     # Rename the binned column to 'Salary':
     df = df.rename(columns={'Salary_Binned': 'Salary'})
 
-    # Generate all combinations of essential variables of length 2:
-    variable_combinations = list(combinations(official_variables_list, 2))
+    st.header("You can view a summary of the individual relationships between your essential variables: ")
 
-    # Plot each variable combination on a bar graph:
-    for combo in variable_combinations:
+    # Display a button to lead to individual results:
+    if st.button("View individual results"):
 
-        # Extract unique value combos from variable 1 and variable 2:
-        value_combinations = df[[combo[0], combo[1]]].drop_duplicates()
+        # Generate all combinations of essential variables of length 2:
+        variable_combinations = list(combinations(official_variables_list, 2))
 
-        # Convert DataFrame to a NumPy record array:
-        record_array = value_combinations.to_records(index=False)
+        # Plot each variable combination on a bar graph:
+        for combo in variable_combinations:
 
-        # Create a list of tuples with unique value combos and their frequencies:
-        value_combo_list = []
+            # Extract unique value combos from variable 1 and variable 2:
+            value_combinations = df[[combo[0], combo[1]]].drop_duplicates()
 
-        # Count the number of occurrences in each value combo:
-        for value_combo in record_array:
+            # Convert DataFrame to a NumPy record array:
+            record_array = value_combinations.to_records(index=False)
 
-            # Define the values you want to match:
-            value1 = value_combo[0]
-            value2 = value_combo[1]
+            # Create a list of tuples with unique value combos and their frequencies:
+            value_combo_list = []
+
+            # Count the number of occurrences in each value combo:
+            for value_combo in record_array:
+
+                # Define the values you want to match:
+                value1 = value_combo[0]
+                value2 = value_combo[1]
+                
+                # Filter rows where both conditions are met:
+
+                filtered_df = df[(df[f"{combo[0]}"] == value1) & (df[f"{combo[1]}"] == value2)]
+
+                # Count the number of such entries:
+                count = filtered_df.shape[0]
+
+                a_tuple = (str(value1), str(value2), count)
+
+                value_combo_list.append(a_tuple)
+
+                
+            # Extract unique values for Variable1 and Variable2:
+            variable1_values = sorted(set(vc[0] for vc in value_combo_list))
+            variable2_values = sorted(set(vc[1] for vc in value_combo_list))
+
+            # Create a dictionary to map Variable1 values to their frequencies for each Variable2:
+            frequency_dict = {var1: {var2: 0 for var2 in variable2_values} for var1 in variable1_values}
+
+            # Fill the dictionary with frequencies:
+            for var1, var2, freq in value_combo_list:
+                frequency_dict[var1][var2] = freq
+
+            # Prepare the plot:
+            fig, ax = plt.subplots(figsize=(20, 16))
+
+            # Set up bar width and positions:
+
+            # Adjust width to fit all bars:
+            width =  0.8 / len(variable2_values)  
+
+            # Increase the space between groups:
+            spacing = 0.5  
+            x = np.arange(len(variable1_values)) * (width * len(variable2_values) + spacing)
+
+            # Generate rainbow colors
+            num_colors = len(variable2_values)
+            cmap = plt.get_cmap('rainbow')
+            colors = [cmap(i / num_colors) for i in range(num_colors)]
+
+
+            # Plot bars for each value in Variable2
+            for i, (var2, color) in enumerate(zip(variable2_values, colors)):
             
-            # Filter rows where both conditions are met:
+                heights = [frequency_dict[var1][var2] for var1 in variable1_values]
+                ax.bar(x + i * width, heights, width, color=color, label=var2)
 
-            filtered_df = df[(df[f"{combo[0]}"] == value1) & (df[f"{combo[1]}"] == value2)]
+            # Add labels, title, and legend:
+            ax.set_xticks(x + width * (len(variable2_values) - 1) / 2)
+            ax.set_xticklabels(variable1_values, rotation=90)  # Rotate x-axis labels
+            ax.set_ylabel(f"Frequencies of {combo[1]} within {combo[0]}")
+            ax.set_xlabel(f"{combo[0]}")
+            ax.set_title(f"{combo[1]} vs. {combo[0]}")
+            ax.legend(title=combo[1], loc='upper left', bbox_to_anchor=(1, 1))  # Move legend outside the plot
 
-            # Count the number of such entries:
-            count = filtered_df.shape[0]
+            # Adjust layout:
+            fig.subplots_adjust(top=0.85, bottom=0.15, left=0.15, right=0.95)
+            plt.tight_layout(pad=2.0)
 
-            a_tuple = (str(value1), str(value2), count)
-
-            value_combo_list.append(a_tuple)
-
-
-        # Extract unique values for Variable1 and Variable2:
-        variable1_values = sorted(set(vc[0] for vc in value_combo_list))
-        variable2_values = sorted(set(vc[1] for vc in value_combo_list))
-
-        # Create a dictionary to map Variable1 values to their frequencies for each Variable2:
-        frequency_dict = {var1: {var2: 0 for var2 in variable2_values} for var1 in variable1_values}
-
-        # Fill the dictionary with frequencies:
-        for var1, var2, freq in value_combo_list:
-            frequency_dict[var1][var2] = freq
-
-        # Prepare the plot:
-        fig, ax = plt.subplots(figsize=(12, 8))
-
-        # Set up bar width and positions:
-
-        # Adjust width to fit all bars:
-        width =  0.8 / len(variable2_values)  
-
-        # Increase the space between groups:
-        spacing = 0.5  
-        x = np.arange(len(variable1_values)) * (width * len(variable2_values) + spacing)
-
-        # Generate rainbow colors
-        num_colors = len(variable2_values)
-        cmap = plt.get_cmap('rainbow')
-        colors = [cmap(i / num_colors) for i in range(num_colors)]
-
-
-        # Plot bars for each value in Variable2
-        for i, (var2, color) in enumerate(zip(variable2_values, colors)):
+            # Display the plot in Streamlit:
+            st.pyplot(fig)
         
-            heights = [frequency_dict[var1][var2] for var1 in variable1_values]
-            ax.bar(x + i * width, heights, width, color=color, label=var2)
+    st.header("Here is also an overall summary of your essential variables: ")
 
-        # Add labels, title, and legend:
-        ax.set_xticks(x + width * (len(variable2_values) - 1) / 2)
-        ax.set_xticklabels(variable1_values, rotation=90)  # Rotate x-axis labels
-        ax.set_ylabel(f"Frequencies of {combo[1]} within {combo[0]}")
-        ax.set_xlabel(f"{combo[0]}")
-        ax.set_title(f"{combo[1]} vs. {combo[0]}")
-        ax.legend(title={combo[1]}, loc='upper left', bbox_to_anchor=(1, 1))  # Move legend outside the plot
+    # Display a button to lead to overall results:
+    if st.button("View overall results"):
 
-        # Adjust layout:
-        fig.subplots_adjust(top=0.85, bottom=0.15, left=0.15, right=0.95)
-        plt.tight_layout(pad=2.0)
+        # Create a heatmap comparing the relationships across all essential variables:
 
-        # Display the plot in Streamlit:
+        sns.set_theme(style="white")
+
+        # Create new dataframe with only essential variables:
+        new_df = df[official_variables_list]
+
+        # Convert categorical columns to numeric using factorize
+        df_encoded = pd.DataFrame({
+            col: pd.factorize(new_df[col])[0] 
+            for col in new_df.columns
+        })
+
+        # Compute the correlation matrix
+        corr = df_encoded.corr()
+
+        # Generate a mask for the upper triangle
+        mask = np.triu(np.ones_like(corr, dtype=bool))
+
+        # Set up the matplotlib figure
+        fig, ax = plt.subplots(figsize=(12, 9))
+
+        # Generate a custom diverging colormap
+        cmap = sns.diverging_palette(230, 20, as_cmap=True)
+
+        # Draw the heatmap with the mask and correct aspect ratio
+        sns.heatmap(corr, mask=mask, cmap=cmap, vmin=-0.1, vmax=0.1, center=0,
+            square=True, linewidths=.5, cbar_kws={"shrink": .5})
+
+        # Display the heatmap in Streamlit
         st.pyplot(fig)
-
-
-
-
-
-
-
-'''    
-    # Create a heatmap:
-
-    sns.set_theme(style="white")
-
-    # Generate a large random dataset
-    rs = np.random.RandomState(33)
-    d = pd.DataFrame(data=rs.normal(size=(100, 26)),
-                    columns=list(ascii_letters[26:]))
-
-    # Compute the correlation matrix
-    corr = d.corr()
-
-    # Generate a mask for the upper triangle
-    mask = np.triu(np.ones_like(corr, dtype=bool))
-
-    # Set up the matplotlib figure
-    f, ax = plt.subplots(figsize=(11, 9))
-
-    # Generate a custom diverging colormap
-    cmap = sns.diverging_palette(230, 20, as_cmap=True)
-
-    # Draw the heatmap with the mask and correct aspect ratio
-    sns.heatmap(corr, mask=mask, cmap=cmap, vmax=.3, center=0,
-                square=True, linewidths=.5, cbar_kws={"shrink": .5})
-
-'''
+    
+        st.info("Pearson Correlation Coefficient key: \n\n- 0.1: Perfect Positive Correlation \n\n- -0.1: Perfect Negative Correlation \n\n- 0.0: No Linear Correlation")
