@@ -190,7 +190,7 @@ else:
     # Rename the binned column to 'Salary':
     df = df.rename(columns={'Salary_Binned': 'Salary'})
 
-    st.header("You can view a summary of the individual relationships between your essential variables: ")
+    st.header("Here is a summary of the distributions and relationships between your essential variables: ")
 
     # Display a button to lead to individual results:
     if st.button("View individual results"):
@@ -279,7 +279,7 @@ else:
             # Display the plot in Streamlit:
             st.pyplot(fig)
         
-    st.header("Here is also an overall summary of your essential variables: ")
+    st.header("Here is an overall summary of your essential variables: ")
 
     # Display a button to lead to overall results:
     if st.button("View overall results"):
@@ -310,10 +310,10 @@ else:
         cmap = sns.diverging_palette(230, 20, as_cmap=True)
 
         # Draw the heatmap with the mask and correct aspect ratio
-        sns.heatmap(corr, mask=mask, cmap=cmap, vmin=-0.1, vmax=0.1, center=0,
+        sns.heatmap(corr, mask=mask, cmap=cmap, vmin=-0.2, vmax=0.2, center=0,
             square=True, linewidths=.5, cbar_kws={"shrink": .5})
 
         # Display the heatmap in Streamlit
         st.pyplot(fig)
     
-        st.info("Pearson Correlation Coefficient key: \n\n- 0.1: Perfect Positive Correlation \n\n- -0.1: Perfect Negative Correlation \n\n- 0.0: No Linear Correlation")
+        st.info("Pearson Correlation Coefficient key: \n\n- 0.2: Positive Correlation \n\n- -0.2: Negative Correlation \n\n- 0.0: No Linear Correlation")
